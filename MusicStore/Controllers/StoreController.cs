@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using MusicStoreES.Models;
+using Nest;
 
 namespace MusicStoreES.Controllers
 {
@@ -11,15 +12,39 @@ namespace MusicStoreES.Controllers
     {
         MusicStoreEntities storeDB = new MusicStoreEntities();
 
-        //
-        // GET: /Store/
-
         public ActionResult Index()
         {
             var genres = storeDB.Genres.ToList();
 
             return View(genres);
         }
+
+        // ELASTICSEARCH
+        public ActionResult Search(string q)
+        {
+            var result = ElasticClient.Search<Album>(body =>
+                    body.Query(query =>
+                    query.QueryString(qs => 
+                    qs.Query(q))));
+
+            var genre = new Genre()
+            {
+                Name = "Search results for " + q,
+                Albums = result.Documents.ToList()
+            };
+
+            return View("Browse", genre);
+        }
+        private static ElasticClient ElasticClient
+        {
+            get
+            {
+                var node = new Uri("http://localhost:9200");
+                var settings = new ConnectionSettings(node, defaultIndex: "musicstore");
+                return new ElasticClient(settings);
+            }
+        }
+        //------------------
 
         //
         // GET: /Store/Browse?genre=Disco

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using MusicStoreES.Models;
+using Nest;
 
 namespace MusicStoreES.Controllers
 {
@@ -22,6 +23,47 @@ namespace MusicStoreES.Controllers
             var albums = db.Albums.Include(a => a.Genre).Include(a => a.Artist);
             return View(albums.ToList());
         }
+
+        // ELASTICSEARCH
+        public ActionResult ReIndex()
+        {
+            var client = ElasticClient;
+            CreateIndex(client);
+            InsertAlbums(client);
+
+            return RedirectToAction("Index");
+        }
+        private static ElasticClient ElasticClient
+        {
+            get
+            {
+                var node = new Uri("http://localhost:9200");
+                var settings = new ConnectionSettings(node, defaultIndex: "musicstore");
+                return new ElasticClient(settings);
+            }
+        }
+        private void CreateIndex(ElasticClient client)
+        {
+            var indexSettings = new IndexSettings()
+            {
+                NumberOfReplicas = 1,
+                NumberOfShards = 1
+            };
+
+            client.CreateIndex(c => c
+                .Index("musicstore")
+                .InitializeUsing(indexSettings)
+                .AddMapping<Album>(m => m.MapFromAttributes()));
+        }
+        private void InsertAlbums(ElasticClient client)
+        {
+            foreach (var album in db.Albums)
+            {
+                client.Index(album, i => i
+                    .Id(album.AlbumId));
+            }
+        }
+        //--------------
 
         //
         // GET: /StoreManager/Details/5
