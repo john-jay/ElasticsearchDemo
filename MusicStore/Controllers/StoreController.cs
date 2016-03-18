@@ -44,19 +44,42 @@ namespace MusicStoreES.Controllers
                 return new ElasticClient(settings);
             }
         }
-        //------------------
-
-        //
-        // GET: /Store/Browse?genre=Disco
 
         public ActionResult Browse(string genre)
         {
-            // Retrieve Genre and its Associated Albums from database
-            var genreModel = storeDB.Genres.Include("Albums")
-                .Single(g => g.Name == genre);
+            //var result = ElasticClient.Search<Album>(body =>
+            //    body.Filter(filter =>
+            //        filter.Term(x =>
+            //            x.Genre.Name, genre.ToLower()))
+            //    .Take(1000));
+
+            var result = ElasticClient.Search<Album>(body =>
+                body.Query(query =>
+                    query.ConstantScore(
+                        csq => csq.Filter(filter =>
+                            filter.Term(x =>
+                                x.Genre.Name, genre.ToLower()))))
+                .Take(1000));
+
+            var genreModel = new Genre()
+            {
+                Name = genre,
+                Albums = result.Documents.ToList()
+            };
 
             return View(genreModel);
         }
+
+        //public ActionResult Browse(string genre)
+        //{
+        //    // Retrieve Genre and its Associated Albums from database
+        //    var genreModel = storeDB.Genres.Include("Albums")
+        //        .Single(g => g.Name == genre);
+
+        //    return View(genreModel);
+        //}
+        //------------------
+
 
         //
         // GET: /Store/Details/5
