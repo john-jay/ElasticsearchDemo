@@ -31,6 +31,7 @@ namespace MusicStoreES.Controllers
             CreateIndex(client);
             InsertAlbums(client);
 
+            TempData["Message"] = "Success";
             return RedirectToAction("Index");
         }
         private static ElasticClient ElasticClient
