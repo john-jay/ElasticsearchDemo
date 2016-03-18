@@ -4,17 +4,23 @@
 }
 <div id="promotion">
 </div>
+<p>
+    Elasticsearch re-indexing has been added to @Html.ActionLink("Admin", "Index", "StoreManager"),<br/>
+    and free text search has been added to @Html.ActionLink("Store", "Index", "Store").
+</p>
 
 <h3><em>Fresh</em> off the grill</h3>
 
 <ul id="album-list">
     @foreach (var album in Model)
     {
-        <li><a href="@Url.Action("Details", "Store",
+        <li>
+            <a href="@Url.Action("Details", "Store",
                 new { id = album.AlbumId })">
 
-            <img alt="@album.Title" src="@album.AlbumArtUrl" />
-            <span>@album.Title</span> </a>
+                <img alt="@album.Title" src="@album.AlbumArtUrl" />
+                <span>@album.Title</span>
+            </a>
         </li>
     }
 </ul>
