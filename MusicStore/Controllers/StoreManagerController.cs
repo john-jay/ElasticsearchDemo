@@ -47,7 +47,7 @@ namespace MusicStoreES.Controllers
         {
             var indexSettings = new IndexSettings()
             {
-                NumberOfReplicas = 1,
+                NumberOfReplicas = 0,
                 NumberOfShards = 1
             };
 

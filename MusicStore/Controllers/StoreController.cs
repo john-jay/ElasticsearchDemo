@@ -29,7 +29,7 @@ namespace MusicStoreES.Controllers
 
             var genre = new Genre()
             {
-                Name = "Search results for " + q,
+                Name = "Search results for \"" + q + "\"",
                 Albums = result.Documents.ToList()
             };
 
