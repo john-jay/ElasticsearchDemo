@@ -39,7 +39,7 @@ namespace MusicStoreES.Controllers
             get
             {
                 var node = new Uri("http://localhost:9200");
-                var settings = new ConnectionSettings(node, defaultIndex: "musicstore");
+                var settings = new ConnectionSettings(node).DefaultIndex("musicstore");
                 return new ElasticClient(settings);
             }
         }
@@ -50,11 +50,13 @@ namespace MusicStoreES.Controllers
                 NumberOfReplicas = 0,
                 NumberOfShards = 1
             };
+            var state = new IndexState { Settings = indexSettings };
 
-            client.CreateIndex(c => c
-                .Index("musicstore")
-                .InitializeUsing(indexSettings)
-                .AddMapping<Album>(m => m.MapFromAttributes()));
+            client.CreateIndex("musicstore", c => c
+                .InitializeUsing(state)
+                .Mappings(ms => ms
+                    .Map<Album>(m => m.AutoMap()))
+                );
         }
         private void InsertAlbums(ElasticClient client)
         {
@@ -83,7 +85,7 @@ namespace MusicStoreES.Controllers
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name");
             ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name");
             return View();
-        } 
+        }
 
         //
         // POST: /StoreManager/Create
@@ -95,17 +97,17 @@ namespace MusicStoreES.Controllers
             {
                 db.Albums.Add(album);
                 db.SaveChanges();
-                return RedirectToAction("Index");  
+                return RedirectToAction("Index");
             }
 
             ViewBag.GenreId = new SelectList(db.Genres, "GenreId", "Name", album.GenreId);
             ViewBag.ArtistId = new SelectList(db.Artists, "ArtistId", "Name", album.ArtistId);
             return View(album);
         }
-        
+
         //
         // GET: /StoreManager/Edit/5
- 
+
         public ActionResult Edit(int id)
         {
             Album album = db.Albums.Find(id);
@@ -133,7 +135,7 @@ namespace MusicStoreES.Controllers
 
         //
         // GET: /StoreManager/Delete/5
- 
+
         public ActionResult Delete(int id)
         {
             Album album = db.Albums.Find(id);
@@ -145,7 +147,7 @@ namespace MusicStoreES.Controllers
 
         [HttpPost, ActionName("Delete")]
         public ActionResult DeleteConfirmed(int id)
-        {            
+        {
             Album album = db.Albums.Find(id);
             db.Albums.Remove(album);
             db.SaveChanges();

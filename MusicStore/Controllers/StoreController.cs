@@ -40,8 +40,8 @@ namespace MusicStoreES.Controllers
             get
             {
                 var node = new Uri("http://localhost:9200");
-                var settings = new ConnectionSettings(node, defaultIndex: "musicstore");
-                settings.SetBasicAuthentication("es_admin", "espass");
+                var settings = new ConnectionSettings(node).DefaultIndex("musicstore");
+                settings.BasicAuthentication("es_admin", "espass");
                 return new ElasticClient(settings);
             }
         }
